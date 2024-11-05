@@ -1,0 +1,55 @@
+---
+- name: Install necessary packages
+  dnf:
+    name:
+      - httpd
+      - mod_ssl
+      - python3-passlib
+    state: present
+
+- name: Allow httpd through SELinux on custom port
+  command: semanage port -a -t http_port_t -p tcp {{ custom_port }}
+  ignore_errors: yes
+
+- name: Create web root directory
+  file:
+    path: "/var/www/html/{{ hostname }}"
+    state: directory
+    owner: "{{ http_user }}"
+    group: "{{ http_group }}"
+    mode: '0755'
+
+- name: Create private directory for secure access
+  file:
+    path: "/var/www/html/{{ hostname }}/private"
+    state: directory
+    owner: "{{ http_user }}"
+    group: "{{ http_group }}"
+    mode: '0755'
+
+- name: Set up htpasswd for user authentication
+  htpasswd:
+    path: "/etc/httpd/conf/.htpasswd-{{ hostname }}"
+    name: "{{ item.user }}"
+    password: "{{ item.pass }}"
+    owner: root
+    group: "{{ http_group }}"
+    mode: '0640'
+  loop: "{{ user_credentials }}"
+
+- name: Configure virtual host
+  template:
+    src: site_configuration.conf.j2
+    dest: "/etc/httpd/conf.d/{{ hostname }}.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart httpd
+
+- name: Create .htaccess file for private directory
+  template:
+    src: access_control.j2
+    dest: "/var/www/html/{{ hostname }}/private/.htaccess"
+    owner: "{{ http_user }}"
+    group: "{{ http_group }}"
+    mode: '0644'

@@ -1,0 +1,11 @@
+---
+- hosts: web_servers
+  become: yes
+  vars_prompt:
+    - name: hostname
+      prompt: "Enter the hostname for the virtual host"
+      private: no
+  vars_files:
+    - variable_files/global_variables.yml
+  roles:
+    - web_server

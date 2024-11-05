@@ -1,0 +1,7 @@
+AuthType Basic
+AuthName "Protected Area"
+AuthUserFile /etc/httpd/conf/.htpasswd-{{ hostname }}
+Require valid-user
+{% if trusted_ip is defined %}
+Require ip {{ trusted_ip }}
+{% endif %}

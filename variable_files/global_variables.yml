@@ -1,0 +1,13 @@
+---
+httpd_port: 80
+https_port: 443
+custom_port: 88  # SELinux port
+trusted_ip: "192.168.72.133" 
+ssl_cert_path: "/etc/pki/tls/certs/localhost.crt"
+ssl_key_path: "/etc/pki/tls/private/localhost.key"
+
+user_credentials:
+  - user: user1
+    pass: password1
+  - user: user2
+    pass: password2

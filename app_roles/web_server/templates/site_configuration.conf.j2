@@ -1,0 +1,37 @@
+<VirtualHost *:{{ httpd_port }}>
+    ServerName {{ hostname }}
+    DocumentRoot /var/www/html/{{ hostname }}
+
+    ErrorLog logs/{{ hostname }}-error.log
+    CustomLog logs/{{ hostname }}-access.log combined
+
+    <Directory "/var/www/html/{{ hostname }}/private">
+        AuthType Basic
+        AuthName "Protected Area"
+        AuthUserFile /etc/httpd/conf/.htpasswd-{{ hostname }}
+        Require valid-user
+    </Directory>
+
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]
+</VirtualHost>
+
+<VirtualHost *:{{ https_port }}>
+    ServerName {{ hostname }}
+    DocumentRoot /var/www/html/{{ hostname }}
+
+    SSLEngine on
+    SSLCertificateFile {{ ssl_cert_path }}
+    SSLCertificateKeyFile {{ ssl_key_path }}
+
+    ErrorLog logs/{{ hostname }}-ssl-error.log
+    CustomLog logs/{{ hostname }}-ssl-access.log combined
+
+    <Directory "/var/www/html/{{ hostname }}/private">
+        AuthType Basic
+        AuthName "Protected Area"
+        AuthUserFile /etc/httpd/conf/.htpasswd-{{ hostname }}
+        Require valid-user
+    </Directory>
+</VirtualHost>
